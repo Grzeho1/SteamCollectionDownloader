@@ -1,4 +1,4 @@
-# SteamDownloader 
+# SteamCollectionDownloader
 
 ## Step 1: Prepare SteamCMD
 
