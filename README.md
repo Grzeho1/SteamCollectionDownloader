@@ -6,7 +6,7 @@
 
 -https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip
 
--Create a folder for SteamCMD, here: D:\steamcmd.
+-Create a folder for SteamCMD, here: ***D:\steamcmd.***
 
 -Extract the contents of the ZIP file into the folder.
 
@@ -18,10 +18,9 @@
 
 -Insert the collection URL.
 
--SteamCMD will operate in the background (SteamDownloader must remain open.).
+-SteamCMD will operate in the background and will be downloading items one by one (***SteamCollectionDownloader must remain OPEN or downloading will be stopped!!.***).
 
 -You can track the download progress in:
+**D:\steamcmd\steamapps\workshop\content\ {gameID}**
 
--D:\steamcmd\steamapps\workshop\content\ {gameID}
-
--If you want stop downloading items just SteamCollectionDownloader.
+-If you want stop downloading items just stop SteamCollectionDownloader.
