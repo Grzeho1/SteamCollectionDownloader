@@ -24,3 +24,9 @@
 **D:\steamcmd\steamapps\workshop\content\ {gameID}**
 
 -If you want stop downloading items just stop SteamCollectionDownloader.
+
+
+
+# Problems
+
+- If you are experiencing any issues with failed downloading,try delete : D:\steamcmd\steamapps\workshop/appworkshop_{gameID}.acf 
