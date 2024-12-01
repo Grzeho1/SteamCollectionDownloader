@@ -23,6 +23,16 @@
 -You can track the download progress in:
 **D:\steamcmd\steamapps\workshop\content\ {gameID}**
 
+Or after every batch (10 items) in SteamCollectionDownloader console
+
+
+![{36AFD741-43E8-4979-B47E-C34405026A73}](https://github.com/user-attachments/assets/dd2168c8-07c7-48bb-81e7-cccdd5791114)
+
+
+
+
+
+
 -If you want stop downloading items just stop SteamCollectionDownloader.
 
 
@@ -30,3 +40,4 @@
 # Problems
 
 - If you are experiencing any issues with failed downloading,try delete : D:\steamcmd\steamapps\workshop/appworkshop_{gameID}.acf 
+
