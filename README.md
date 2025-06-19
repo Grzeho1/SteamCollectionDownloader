@@ -6,7 +6,7 @@
 
 -https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip
 
--Create a folder for SteamCMD, here: ***D:\steamcmd.***
+-Create a folder for SteamCMD, here: ***D:\steamcmd.*** (For now it is hardcoded path)
 
 -Extract the contents of the ZIP file into the folder.
 
