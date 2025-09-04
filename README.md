@@ -2,7 +2,7 @@
 
 ***With this downloader, you can download all items from a Steam Workshop collection at once — not one by one, and even if you don't own the game on Steam.***
 
-Release with .exe here: https://github.com/Grzeho1/SteamCollectionDownloader/releases/tag/v0.2.1
+Release with .exe here: (https://github.com/Grzeho1/SteamCollectionDownloader/releases/tag/v0.3.1)
 
 ## Step 1: Prepare SteamCMD
 
@@ -10,7 +10,7 @@ Release with .exe here: https://github.com/Grzeho1/SteamCollectionDownloader/rel
 
 -https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip
 
--Create a folder for SteamCMD, here: ***D:\steamcmd.*** (For now it is hardcoded path)
+-Create a folder for SteamCMD, here: ***D:\steamcmd.***  OR ***C:\steamcmd.***
 
 -Extract the contents of the ZIP file into the folder.
 
