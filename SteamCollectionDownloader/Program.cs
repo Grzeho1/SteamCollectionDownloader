@@ -15,8 +15,27 @@ class Program
 
     static async Task Main(string[] args)
     {
-        string steamCmdPath = "D:\\steamcmd\\steamcmd.exe";
-        
+        // string steamCmdPath = "D:\\steamcmd\\steamcmd.exe";
+
+        string? steamCmdPath = FindCMDexe();
+        if (steamCmdPath == null)
+        {
+            Console.WriteLine("Cannot find steamcmd.exe. Please install steamcmd and place it in C:\\steamcmd\\ or D:\\steamcmd\\");
+            Console.WriteLine("Or write here the full path to steamcmd.exe manually, something like C:\\Games\\steamcmd.exe  ");
+
+            string? userInput = Console.ReadLine();
+
+            if (!string.IsNullOrWhiteSpace(userInput) && File.Exists(userInput))
+            {
+                steamCmdPath = userInput;  
+            }
+            else
+            {
+                Console.WriteLine("steamcmd.exe was not found.");
+                return; 
+            }
+        }
+
         Console.WriteLine("Insert collection url.");
         string collectionUrl = Console.ReadLine();
 
@@ -129,4 +148,44 @@ class Program
             Console.WriteLine(id);
         }
     }
+
+    static string FindCMDexe()
+    {
+        
+        string[] paths = new[]
+        {
+         @"C:\steamcmd\steamcmd.exe",
+        @"C:\Program Files (x86)\SteamCMD\steamcmd.exe",
+        @"C:\Program Files\SteamCMD\steamcmd.exe",
+        @"C:\Games\x\steamcmd.exe",
+        @"D:\steamcmd\steamcmd.exe",
+
+        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "steamcmd.exe") };
+
+        foreach (string path in paths)
+        {
+            if (File.Exists(path))
+            {
+                return path;
+            }
+        }
+        var pathEnv = Environment.GetEnvironmentVariable("PATH");
+        if (pathEnv != null)
+        {
+            foreach (var dir in pathEnv.Split(Path.PathSeparator))
+            {
+                try
+                {
+                    var candidate = Path.Combine(dir, "steamcmd.exe");
+                    if (File.Exists(candidate))
+                        return candidate;
+                }
+                catch { }
+            }
+        }
+
+        return null; 
+
+    }
+
 }
