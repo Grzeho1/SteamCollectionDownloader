@@ -10,7 +10,7 @@ Release with .exe here: (https://github.com/Grzeho1/SteamCollectionDownloader/re
 
 -https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip
 
--Create a folder for SteamCMD, here: ***D:\steamcmd.***  OR ***C:\steamcmd.***
+-Create a folder for SteamCMD, here: ***D:\steamcmd.***  OR ***C:\steamcmd.***  (u can write path manualy later if steamdownloader cant find steamcmd.exe)
 
 -Extract the contents of the ZIP file into the folder.
 
