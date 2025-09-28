@@ -42,5 +42,6 @@ Or after every batch (2 items) in SteamCollectionDownloader console
 
 # Problems
 
-- If you are experiencing any issues with failed downloading,try delete : D:\steamcmd\steamapps\workshop/appworkshop_{gameID}.acf 
--- If u cant start steamcollectiondownloader.exe u need to download .NET runtime to your computer  https://dotnet.microsoft.com/en-us/download/dotnet/8.0/runtime
+- If you are experiencing any issues with failed downloading,try delete : D:\steamcmd\steamapps\workshop/appworkshop_{gameID}.acf
+- 
+- If u cant start steamcollectiondownloader.exe u need to download .NET runtime to your computer  https://dotnet.microsoft.com/en-us/download/dotnet/8.0/runtime
