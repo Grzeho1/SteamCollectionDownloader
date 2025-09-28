@@ -165,9 +165,9 @@ class Program
 
     private static void PrintResults(HashSet<string> successful, HashSet<string> failed)
     {
-        Log("\n===== COMPLETE =====", ConsoleColor.White);
+        Log("\n===== COLLECTION DOWNLOADING COMPLETE =====", ConsoleColor.White);
 
-        Log("Downloaded:", ConsoleColor.Green);
+        Log("Total MODS Downloaded:", ConsoleColor.Green);
         foreach (string id in successful) Log(id, ConsoleColor.Green);
         Log($"Total: {successful.Count}", ConsoleColor.Green);
 
