@@ -2,7 +2,7 @@
 
 ***With this downloader, you can download all items from a Steam Workshop collection at once — not one by one, and even if you don't own the game on Steam.***
 
-Release with .exe here: (https://github.com/Grzeho1/SteamCollectionDownloader/releases/tag/v0.3.1)
+Release with .exe here: (https://github.com/Grzeho1/SteamCollectionDownloader/releases/tag/v0.4)
 
 ## Step 1: Prepare SteamCMD
 
