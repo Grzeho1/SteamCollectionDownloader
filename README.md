@@ -4,7 +4,7 @@
 
 Release with .exe here: (https://github.com/Grzeho1/SteamCollectionDownloader/releases/tag/v0.4)
 
-## Step 1: Prepare SteamCMD
+## Step 1: Prepare SteamCMD  (If you already have steamCMD in your computer, u can skip)
 
 -Download SteamCMD for Windows:
 
