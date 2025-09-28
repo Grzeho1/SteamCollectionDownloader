@@ -29,10 +29,26 @@ class Program
             return;
         }
 
-        var ids = await Scraper.ExtractWorkshopIDs(collectionUrl);
+        List<string> ids;
+        try
+        {
+            Log("Downloading ids from collection", ConsoleColor.Cyan);
+            ids = await Scraper.ExtractWorkshopIDs(collectionUrl);
+        }
+        catch (Exception ex)
+        {
+            Log($"Failed to download or parse collection. {ex.Message}", ConsoleColor.Red);
+            Log("Please check the URL and try again.", ConsoleColor.Yellow);
+            Console.WriteLine("Press ENTER to exit...");
+            Console.ReadLine();
+            return;
+        }
+
         if (ids.Count == 0)
         {
-            Log("No workshop IDs found.", ConsoleColor.Yellow);
+            Log("No workshop IDs found in collection.", ConsoleColor.Yellow);
+            Console.WriteLine("Press ENTER to exit...");
+            Console.ReadLine();
             return;
         }
 
@@ -51,6 +67,7 @@ class Program
         }
 
         PrintResults(successful, failed);
+        Console.ReadLine();
     }
 
     private static string? PromptForSteamCmdPath()
