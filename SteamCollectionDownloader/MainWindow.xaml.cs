@@ -25,6 +25,7 @@ namespace SteamDownloader
         public MainWindow()
         {
             InitializeComponent();
+            OpenFolderButton.IsEnabled = false;
         }
 
         private async void StartButton_Click(object sender, RoutedEventArgs e)
