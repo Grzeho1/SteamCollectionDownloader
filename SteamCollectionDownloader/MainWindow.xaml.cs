@@ -28,6 +28,7 @@ namespace SteamDownloader
         public MainWindow()
         {
             InitializeComponent();
+            
         }
 
         private void LoadLastUrl()
@@ -71,6 +72,7 @@ namespace SteamDownloader
             cancellationTokenSource = new CancellationTokenSource();
             UpdateStatus("Initializing...");
             steamCmdPath = await FindCMDexeAsync();
+            failed.Clear();
 
             if (string.IsNullOrWhiteSpace(steamCmdPath) || !File.Exists(steamCmdPath))
             {
