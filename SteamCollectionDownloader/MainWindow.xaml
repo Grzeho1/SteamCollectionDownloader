@@ -1,9 +1,9 @@
 ﻿<Window x:Class="SteamDownloader.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Steam Workshop Downloader" 
-        Height="650" Width="850"
-        MinHeight="450" MinWidth="650"
+        Title="Workshop Downloader" 
+        Height="600" Width="800"
+        MinHeight="250" MinWidth="350"
         Background="#1E1E1E"
         WindowStyle="SingleBorderWindow"
         ResizeMode="CanResize">
@@ -12,16 +12,16 @@
         <Style TargetType="Button">
             <Setter Property="Background" Value="#039BE5"/>
             <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontSize" Value="11"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="Padding" Value="8,4"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}"
-                                CornerRadius="10"
+                                CornerRadius="4"
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
@@ -48,8 +48,8 @@
             <Setter Property="Foreground" Value="#E0E0E0"/>
             <Setter Property="BorderBrush" Value="#616161"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="12"/>
-            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Padding" Value="6"/>
+            <Setter Property="FontSize" Value="11"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Template">
@@ -58,13 +58,13 @@
                         <Border Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="10">
+                                CornerRadius="4">
                             <ScrollViewer x:Name="PART_ContentHost" Margin="2"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsFocused" Value="True">
                                 <Setter Property="BorderBrush" Value="#039BE5"/>
-                                <Setter Property="BorderThickness" Value="2"/>
+                                <Setter Property="BorderThickness" Value="1.5"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -78,8 +78,8 @@
             <Setter Property="Foreground" Value="#E0E0E0"/>
             <Setter Property="BorderBrush" Value="#616161"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="8"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="4"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -87,7 +87,7 @@
                         <Border Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="10">
+                                CornerRadius="4">
                             <ScrollViewer VerticalScrollBarVisibility="Auto">
                                 <ItemsPresenter/>
                             </ScrollViewer>
@@ -101,21 +101,21 @@
         <Style TargetType="ProgressBar">
             <Setter Property="Background" Value="#616161"/>
             <Setter Property="Foreground" Value="#00E5FF"/>
-            <Setter Property="Height" Value="25"/>
+            <Setter Property="Height" Value="12"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ProgressBar">
                         <Border Background="{TemplateBinding Background}"
-                                CornerRadius="12">
+                                CornerRadius="4">
                             <Grid>
                                 <Rectangle x:Name="PART_Indicator"
                                            HorizontalAlignment="Left"
                                            Fill="{TemplateBinding Foreground}"
-                                           RadiusX="12" RadiusY="12"/>
+                                           RadiusX="4" RadiusY="4"/>
                                 <TextBlock x:Name="ProgressText"
                                            Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Value, StringFormat={}{0:F1}%}"
                                            Foreground="White"
-                                           FontSize="14"
+                                           FontSize="9"
                                            FontFamily="Segoe UI"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"/>
@@ -127,7 +127,7 @@
         </Style>
     </Window.Resources>
 
-    <Grid Margin="30">
+    <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -138,24 +138,24 @@
 
         <!-- Header -->
         <TextBlock Grid.Row="0" 
-                   Text="Steam Workshop Downloader" 
-                   FontSize="26" 
-                   FontWeight="Bold" 
+                   Text="Workshop Downloader" 
+                   FontSize="18" 
+                   FontWeight="SemiBold" 
                    FontFamily="Segoe UI"
                    Foreground="#E0E0E0" 
-                   Margin="0,0,0,20"/>
+                   Margin="0,0,0,8"/>
 
         <!-- URL input -->
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,20">
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
             <TextBlock Text="Collection URL:" 
-                       Width="120" 
-                       FontSize="16" 
+                       Width="70" 
+                       FontSize="11" 
                        FontFamily="Segoe UI"
                        VerticalAlignment="Center" 
                        Foreground="#B0BEC5"/>
             <TextBox x:Name="CollectionUrlTextBox" 
-                     Width="550" 
-                     Margin="10,0,0,0" 
+                     Width="400" 
+                     Margin="5,0,0,0" 
                      AcceptsReturn="False"
                      ToolTip="Enter the Steam Workshop collection URL"/>
         </StackPanel>
@@ -163,16 +163,16 @@
         <!-- Log output -->
         <ListBox x:Name="LogListBox" 
                  Grid.Row="2" 
-                 Margin="0,0,0,20"/>
+                 Margin="0,0,0,8"/>
 
         <!-- Progress section -->
-        <StackPanel Grid.Row="3" Margin="0,0,0,20">
+        <StackPanel Grid.Row="3" Margin="0,0,0,8">
             <TextBlock x:Name="StatusTextBlock" 
                        Text="Ready" 
-                       FontSize="14" 
+                       FontSize="10" 
                        FontFamily="Segoe UI"
                        Foreground="#B0BEC5" 
-                       Margin="0,0,0,5"/>
+                       Margin="0,0,0,3"/>
             <ProgressBar x:Name="DownloadProgressBar" 
                          Maximum="100" 
                          Value="0"/>
@@ -184,13 +184,20 @@
                     HorizontalAlignment="Right">
             <Button x:Name="OpenFolderButton" 
                     Content="Open Folder" 
-                    Width="150" 
-                    Margin="0,0,10,0"
-                    ToolTip="Open the folder containing downloaded workshop items"
+                    Width="80" 
+                    Margin="0,0,5,0"
+                    ToolTip="Open the folder containing downloaded items"
                     Click="OpenFolderButton_Click"/>
+            <Button x:Name="CancelButton" 
+                    Content="Cancel" 
+                    Width="80" 
+                    Margin="0,0,5,0"
+                    ToolTip="Cancel the current download"
+                    Click="CancelButton_Click"/>
             <Button x:Name="StartButton" 
-                    Content="Start Download" 
-                    Width="150" 
+                    Content="Start download" 
+                    Width="90" 
+                    Background="Green"
                     Click="StartButton_Click"/>
         </StackPanel>
     </Grid>

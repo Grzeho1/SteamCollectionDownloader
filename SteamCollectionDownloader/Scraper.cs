@@ -3,59 +3,50 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SteamDownloader
 {
     public class Scraper
     {
-
-        public static async Task<List<string>> ExtractWorkshopIDs(string collectionUrl)
+        public static async Task<List<(string gameId, string workshopId, string itemName)>> ExtractWorkshopIDs(string collectionUrl)
         {
-            var ids = new List<string>();
+            var ids = new List<(string gameId, string workshopId, string itemName)>();
 
             using (HttpClient client = new HttpClient())
             {
-
-                Console.WriteLine("Downloading ids from collection");
-                var html = await client.GetStringAsync(collectionUrl);
-
-                var doc = new HtmlDocument();
-                doc.LoadHtml(html);
-
-                // hledaní id v html
-                var nodes = doc.DocumentNode.SelectNodes("//div[@class='collectionItem']/@id");
-
-                // hledaní gameId v html
-                var gameIdNode = doc.DocumentNode.SelectSingleNode("//a[contains(@href, 'app/')]");
-
-                string gameId = gameIdNode != null ? gameIdNode.GetAttributeValue("href", "").Split('/').Last().Split('?')[0] : "";
-
-                if (nodes != null && !string.IsNullOrEmpty(gameId))
+                try
                 {
-                    foreach (var node in nodes)
+                    var html = await client.GetStringAsync(collectionUrl);
+                    var doc = new HtmlDocument();
+                    doc.LoadHtml(html);
+
+                    var gameIdNode = doc.DocumentNode.SelectSingleNode("//a[contains(@href, 'app/')]");
+                    string gameId = gameIdNode != null ? gameIdNode.GetAttributeValue("href", "").Split('/').Last().Split('?')[0] : "";
+
+                    var nodes = doc.DocumentNode.SelectNodes("//div[@class='collectionItem']");
+                    if (nodes != null && !string.IsNullOrEmpty(gameId))
                     {
-                        string idValue = node.GetAttributeValue("id", "");
-
-                        if (idValue.StartsWith("sharedfile_"))
+                        foreach (var node in nodes)
                         {
-                            // osekat prefix a extrahovat jen id
-                            string formattedId = $"{gameId} {idValue.Replace("sharedfile_", "")}";
-                            ids.Add(formattedId);
-
+                            string idValue = node.GetAttributeValue("id", "");
+                            if (idValue.StartsWith("sharedfile_"))
+                            {
+                                string workshopId = idValue.Replace("sharedfile_", "");
+                                var nameNode = node.SelectSingleNode(".//div[@class='workshopItemTitle']");
+                                string itemName = nameNode != null ? nameNode.InnerText.Trim() : "Unknown Item";
+                                ids.Add((gameId, workshopId, itemName));
+                            }
                         }
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    Console.WriteLine("No id in collection.");
+                    Console.WriteLine($"Failed to fetch collection: {ex.Message}");
                 }
 
-
+                return ids;
             }
-
-            return ids;
         }
     }
 }
