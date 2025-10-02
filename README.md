@@ -34,7 +34,6 @@
     <img src="https://img.shields.io/badge/⭐%20Give%20this%20project%20a%20STAR!-ffcc00?style=for-the-badge&logo=github&logoColor=black" width="400" alt="Star this repo"/>
   </a>
 </p>
-
 <p align="center">
   <b>If you find this project useful, please give it a star — it really helps! 🙌</b>
 </p>
@@ -50,4 +49,7 @@
 
 - If you are experiencing any issues with failed downloading,try delete : D:\steamcmd\steamapps\workshop/appworkshop_{gameID}.acf
 
-If u have any issues or ideas please let me know.
+> [!TIP]  
+> 💡 If you have any issues or ideas, please let me know!
+
+
