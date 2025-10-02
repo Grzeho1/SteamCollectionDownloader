@@ -1,47 +1,40 @@
+<p align="center">
+  <a href="https://github.com/Grzeho1/SteamCollectionDownloader/releases/tag/v1.0">
+    <img src="https://img.shields.io/github/v/release/Grzeho1/SteamCollectionDownloader?style=for-the-badge&color=brightgreen&logo=github" alt="Latest Release">
+  </a>
+  <a href="https://github.com/Grzeho1/SteamCollectionDownloader/releases">
+    <img src="https://img.shields.io/github/downloads/Grzeho1/SteamCollectionDownloader/total?style=for-the-badge&color=blue&logo=steam" alt="Downloads">
+  </a>
+  <a href="https://dotnet.microsoft.com/">
+    <img src="https://img.shields.io/badge/Made%20with-C%23-239120?style=for-the-badge&logo=c-sharp" alt="Made with C#">
+  </a>
+</p>
+
+
 # SteamCollectionDownloader
 
 ***With this downloader, you can download all items from a Steam Workshop collection at once — not one by one, and even if you don't own the game on Steam.***
 
-Release with .exe here: (https://github.com/Grzeho1/SteamCollectionDownloader/releases/tag/v0.4)
-
-## Step 1: Prepare SteamCMD  (If you already have steamCMD in your computer, u can skip)
-
--Download SteamCMD for Windows:
-
--https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip
-
--Create a folder for SteamCMD, here: ***D:\steamcmd.***  OR ***C:\steamcmd.***  (u can write path manualy later if steamdownloader cant find steamcmd.exe)
-
--Extract the contents of the ZIP file into the folder.
-
---On the first run, several folders and files will be created automatically.
-
-## Step 2: Use SteamCollectionDownloader
-
--Run SteamDownloader.
-
--Insert the collection URL.
-
--SteamCMD will operate in the background and will be downloading items one by one (***SteamCollectionDownloader must remain OPEN or downloading will be stopped!!.***).
-
--You can track the download progress in:
-**D:\steamcmd\steamapps\workshop\content\ {gameID}**
-
-Or after every batch (2 items) in SteamCollectionDownloader console
+## ✨ Features
+- 📥 Download entire Steam Workshop collections with a single click  
+- 📊 Displays item names, progress, and status in a clean console log  
+- 🔄 Automatically downloads **SteamCMD** if not found  
 
 
-<img width="619" height="593" alt="image" src="https://github.com/user-attachments/assets/5f6848cd-9329-4649-9d0e-64bb2975bbc0" />
+## 🛠 How to Use
+
+- 1️⃣ Double-click **`SteamCollectionDownloader.exe`**  
+- 2️⃣ Insert the collection URL (e.g. `https://steamcommunity.com/sharedfiles/filedetails/?id=123456789`)  
+- 3️⃣ Click **Start** to download all items in the collection  
 
 
 
-
-
--If you want stop downloading items just stop SteamCollectionDownloader.
-
+ <img src="(https://github.com/user-attachments/assets/34a254e6-e4be-451d-ba2c-96f31e9cc6d8)" width="400"/>
+<img width="776" height="558" alt="image" src="https://github.com/user-attachments/assets/34a254e6-e4be-451d-ba2c-96f31e9cc6d8"/>
 
 
 # Problems
 
 - If you are experiencing any issues with failed downloading,try delete : D:\steamcmd\steamapps\workshop/appworkshop_{gameID}.acf
-- 
-- If u cant start steamcollectiondownloader.exe u need to download .NET runtime to your computer  https://dotnet.microsoft.com/en-us/download/dotnet/8.0/runtime
+
+If u have any issues or ideas please let me know.
