@@ -23,6 +23,9 @@
 
 ## 🛠 How to Use
 
+## - 0️⃣ [ CLICK To Download Latest Release](https://github.com/Grzeho1/SteamCollectionDownloader/releases/tag/v1.0)
+
+
 - 1️⃣ Double-click **`SteamCollectionDownloader.exe`**  
 - 2️⃣ Insert the collection URL (e.g. `https://steamcommunity.com/sharedfiles/filedetails/?id=123456789`)  
 - 3️⃣ Click **Start** to download all items in the collection  
@@ -39,11 +42,9 @@
   <b>If you find this project useful, please give it a star — it really helps! 🙌</b>
 </p>
 
+> [!TIP]  
+> ![Preview](https://github.com/user-attachments/assets/34a254e6-e4be-451d-ba2c-96f31e9cc6d8)
 
-
-
- <img src="(https://github.com/user-attachments/assets/34a254e6-e4be-451d-ba2c-96f31e9cc6d8)" width="400"/>
-<img width="776" height="558" alt="image" src="https://github.com/user-attachments/assets/34a254e6-e4be-451d-ba2c-96f31e9cc6d8"/>
 
 
 # Problems
