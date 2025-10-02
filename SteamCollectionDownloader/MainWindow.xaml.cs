@@ -4,7 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -14,73 +16,108 @@ namespace SteamDownloader
 {
     public partial class MainWindow : Window
     {
-        private readonly string LogFile = $"steam_download_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.log";
+        private readonly string LogFile = $"download_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.log";
+        private readonly string ConfigFile = "config.json";
         private readonly HashSet<string> successful = new HashSet<string>();
         private readonly HashSet<string> failed = new HashSet<string>();
-        private bool isSteamCmdInitialized = false;
         private string steamCmdPath = string.Empty;
         private int totalItems = 0;
         private int completedItems = 0;
+        private CancellationTokenSource cancellationTokenSource;
 
         public MainWindow()
         {
             InitializeComponent();
-            OpenFolderButton.IsEnabled = false;
+        }
+
+        private void LoadLastUrl()
+        {
+            try
+            {
+                if (File.Exists(ConfigFile))
+                {
+                    var json = File.ReadAllText(ConfigFile);
+                    var config = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
+                    if (config != null && config.TryGetValue("LastUrl", out var url))
+                    {
+                        CollectionUrlTextBox.Text = url;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"Failed to load last URL: {ex.Message}", ConsoleColor.Yellow);
+            }
+        }
+
+        private void SaveLastUrl(string url)
+        {
+            try
+            {
+                var config = new Dictionary<string, string> { { "LastUrl", url } };
+                File.WriteAllText(ConfigFile, JsonSerializer.Serialize(config));
+            }
+            catch (Exception ex)
+            {
+                Log($"Failed to save last URL: {ex.Message}", ConsoleColor.Yellow);
+            }
         }
 
         private async void StartButton_Click(object sender, RoutedEventArgs e)
         {
             StartButton.IsEnabled = false;
+            CancelButton.IsEnabled = true;
             OpenFolderButton.IsEnabled = false;
+            cancellationTokenSource = new CancellationTokenSource();
             UpdateStatus("Initializing...");
             steamCmdPath = await FindCMDexeAsync();
 
             if (string.IsNullOrWhiteSpace(steamCmdPath) || !File.Exists(steamCmdPath))
             {
-                Log("steamcmd.exe not found or could not be initialized.", ConsoleColor.Red);
+                Log("steamcmd.exe not found.", ConsoleColor.Red);
                 UpdateStatus("Error: steamcmd.exe not found");
                 StartButton.IsEnabled = true;
+                CancelButton.IsEnabled = false;
                 OpenFolderButton.IsEnabled = true;
                 return;
             }
 
-            if (!isSteamCmdInitialized)
-            {
-                await InitializeSteamCmdAsync(steamCmdPath);
-            }
-
             string collectionUrl = CollectionUrlTextBox.Text;
+            SaveLastUrl(collectionUrl);
 
             if (string.IsNullOrWhiteSpace(collectionUrl))
             {
                 Log("No URL provided.", ConsoleColor.Yellow);
                 UpdateStatus("Error: No URL provided");
                 StartButton.IsEnabled = true;
+                CancelButton.IsEnabled = false;
                 OpenFolderButton.IsEnabled = true;
                 return;
             }
 
-            List<string> ids;
+            List<(string gameId, string workshopId, string itemName)> ids;
             try
             {
                 Log("Fetching IDs from collection...", ConsoleColor.Cyan);
-                UpdateStatus("Fetching collection IDs...");
+                UpdateStatus("Fetching IDs...");
                 ids = await Scraper.ExtractWorkshopIDs(collectionUrl);
             }
             catch (Exception ex)
             {
-                Log($"Failed to fetch or parse collection: {ex.Message}", ConsoleColor.Red);
+                Log($"Failed to fetch collection: {ex.Message}", ConsoleColor.Red);
                 UpdateStatus("Error: Failed to fetch IDs");
                 StartButton.IsEnabled = true;
+                CancelButton.IsEnabled = false;
                 OpenFolderButton.IsEnabled = true;
                 return;
             }
 
             if (ids.Count == 0)
             {
-                Log("No workshop items found in collection.", ConsoleColor.Yellow);
-                UpdateStatus("Error: No items found in collection");
+                Log("No items found in collection.", ConsoleColor.Yellow);
+                UpdateStatus("Error: No items found");
                 StartButton.IsEnabled = true;
+                CancelButton.IsEnabled = false;
                 OpenFolderButton.IsEnabled = true;
                 return;
             }
@@ -89,21 +126,59 @@ namespace SteamDownloader
             completedItems = 0;
             DownloadProgressBar.Maximum = 100;
             DownloadProgressBar.Value = 0;
-            Log($"Total items to download: {totalItems}", ConsoleColor.Cyan);
+            Log($"Total items to process: {totalItems}", ConsoleColor.Cyan);
 
-            foreach (var id in ids)
+            try
             {
-                UpdateStatus($"Downloading item {id} ({completedItems + 1}/{totalItems})...");
-                await DownloadItem(id, steamCmdPath, successful, failed);
-                completedItems++;
-                double progress = (completedItems * 100.0) / totalItems;
-                DownloadProgressBar.Value = progress;
+                foreach (var (gameId, workshopId, itemName) in ids)
+                {
+                    if (cancellationTokenSource.Token.IsCancellationRequested)
+                    {
+                        Log("Download cancelled by user.", ConsoleColor.Yellow);
+                        UpdateStatus("Download cancelled");
+                        break;
+                    }
+
+                    string itemPath = Path.Combine(Path.GetDirectoryName(steamCmdPath), "steamapps", "workshop", "content", gameId, workshopId);
+                    if (Directory.Exists(itemPath) && Directory.GetFiles(itemPath, "*", SearchOption.AllDirectories).Any())
+                    {
+                        Log($"Item {workshopId} '{itemName}' already exists for AppID {gameId}.", ConsoleColor.Green);
+                        successful.Add(workshopId);
+                        completedItems++;
+                        double itemProgress = (completedItems * 100.0) / totalItems;
+                        DownloadProgressBar.Value = itemProgress;
+                        UpdateStatus($"Item {workshopId} skipped ({completedItems}/{totalItems})");
+                        continue;
+                    }
+
+                    UpdateStatus($"Downloading item {workshopId} '{itemName}' for AppID {gameId} ({completedItems + 1}/{totalItems})...");
+                    await DownloadItem(gameId, workshopId, itemName, steamCmdPath, successful, failed, cancellationTokenSource.Token);
+                    completedItems++;
+                    double totalProgress = (completedItems * 100.0) / totalItems;
+                    DownloadProgressBar.Value = totalProgress;
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                Log("Download cancelled.", ConsoleColor.Yellow);
+                UpdateStatus("Download cancelled");
             }
 
-            PrintResults();
+            Log("\n===== DOWNLOAD COMPLETED =====", ConsoleColor.White);
             UpdateStatus("Download completed");
+            Log($"Downloaded or skipped: {successful.Count}", ConsoleColor.Green);
+            Log($"Failed: {failed.Count}", ConsoleColor.Red);
             StartButton.IsEnabled = true;
+            CancelButton.IsEnabled = false;
             OpenFolderButton.IsEnabled = true;
+            cancellationTokenSource.Dispose();
+        }
+
+        private async void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            cancellationTokenSource?.Cancel();
+            CancelButton.IsEnabled = false;
+            UpdateStatus("Cancelling...");
         }
 
         private async void OpenFolderButton_Click(object sender, RoutedEventArgs e)
@@ -118,12 +193,12 @@ namespace SteamDownloader
                         FileName = workshopFolder,
                         UseShellExecute = true
                     });
-                    Log("Workshop content folder opened.", ConsoleColor.Green);
+                    Log("Folder opened.", ConsoleColor.Green);
                     UpdateStatus("Folder opened");
                 }
                 else
                 {
-                    Log("Workshop content folder not found.", ConsoleColor.Yellow);
+                    Log("Folder not found.", ConsoleColor.Yellow);
                     UpdateStatus("Error: Folder not found");
                 }
             }
@@ -140,19 +215,8 @@ namespace SteamDownloader
             string steamCmdPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Steamcmd", "steamcmd.exe");
             if (File.Exists(steamCmdPath))
             {
-                Log("Found steamcmd.exe in Steamcmd folder.", ConsoleColor.Green);
+                Log("Found steamcmd.exe.", ConsoleColor.Green);
                 UpdateStatus("steamcmd.exe found");
-                return steamCmdPath;
-            }
-
-            string projectSteamCmdPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Steamcmd", "steamcmd.exe");
-            if (File.Exists(projectSteamCmdPath))
-            {
-                string targetDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Steamcmd");
-                Directory.CreateDirectory(targetDir);
-                File.Copy(projectSteamCmdPath, steamCmdPath, true);
-                Log("Copied steamcmd.exe to output directory.", ConsoleColor.Green);
-                UpdateStatus("steamcmd.exe copied");
                 return steamCmdPath;
             }
 
@@ -173,7 +237,7 @@ namespace SteamDownloader
 
                 if (File.Exists(steamCmdPath))
                 {
-                    Log("steamcmd.exe downloaded successfully.", ConsoleColor.Green);
+                    Log("steamcmd.exe downloaded.", ConsoleColor.Green);
                     UpdateStatus("steamcmd.exe downloaded");
                     return steamCmdPath;
                 }
@@ -184,95 +248,14 @@ namespace SteamDownloader
                 UpdateStatus("Error: Failed to download steamcmd.exe");
             }
 
-            string[] paths =
-            {
-                @"C:\steamcmd\steamcmd.exe",
-                @"C:\Program Files (x86)\SteamCMD\steamcmd.exe",
-                @"C:\Program Files\SteamCMD\steamcmd.exe",
-                @"C:\Games\steamcmd.exe",
-                @"D:\steamcmd\steamcmd.exe"
-            };
-
-            return paths.FirstOrDefault(File.Exists)
-                   ?? Environment.GetEnvironmentVariable("PATH")?
-                       .Split(Path.PathSeparator)
-                       .Select(dir => Path.Combine(dir, "steamcmd.exe"))
-                       .FirstOrDefault(File.Exists);
+            return null;
         }
 
-        private async Task InitializeSteamCmdAsync(string steamCmdPath)
+        private async Task DownloadItem(string gameId, string workshopId, string itemName, string steamCmdPath, HashSet<string> successful, HashSet<string> failed, CancellationToken cancellationToken)
         {
-            Log("Initializing steamcmd.exe...", ConsoleColor.Cyan);
-            UpdateStatus("Initializing steamcmd.exe...");
+            Log($"Starting download of item {workshopId} '{itemName}' for AppID {gameId}", ConsoleColor.Cyan);
 
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = steamCmdPath,
-                Arguments = "+quit",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-
-            try
-            {
-                using var process = Process.Start(startInfo);
-                if (process == null)
-                {
-                    Log("Failed to start steamcmd.exe for initialization.", ConsoleColor.Red);
-                    UpdateStatus("Error: Failed to initialize steamcmd.exe");
-                    return;
-                }
-
-                var outputTask = Task.Run(async () =>
-                {
-                    string? line;
-                    while ((line = await process.StandardOutput.ReadLineAsync()) != null)
-                    {
-                        if (line.Contains("Steam>", StringComparison.OrdinalIgnoreCase))
-                        {
-                            Log("[steamcmd-init] SteamCMD initialized.", ConsoleColor.Gray);
-                        }
-                    }
-                });
-
-                var errorTask = Task.Run(async () =>
-                {
-                    string? line;
-                    while ((line = await process.StandardError.ReadLineAsync()) != null)
-                    {
-                        Log($"[steamcmd-init] Error: {line}", ConsoleColor.Red);
-                    }
-                });
-
-                await Task.WhenAll(process.WaitForExitAsync(), outputTask, errorTask);
-
-                if (process.ExitCode == 0)
-                {
-                    Log("steamcmd.exe initialized successfully.", ConsoleColor.Green);
-                    UpdateStatus("steamcmd.exe initialized");
-                    isSteamCmdInitialized = true;
-                }
-                else
-                {
-                    Log("steamcmd.exe initialization failed.", ConsoleColor.Red);
-                    UpdateStatus("Error: steamcmd.exe initialization failed");
-                }
-            }
-            catch (Exception ex)
-            {
-                Log($"Initialization error: {ex.Message}", ConsoleColor.Red);
-                UpdateStatus("Error: Initialization failed");
-            }
-        }
-
-        private async Task DownloadItem(string id, string steamCmdPath, HashSet<string> successful, HashSet<string> failed)
-        {
-            Log($"Starting download of item {id}", ConsoleColor.Cyan);
-
-            string arguments = $"+login anonymous +workshop_download_item {id} +quit";
-
+            string arguments = $"+login anonymous +workshop_download_item {gameId} {workshopId} +quit";
             var startInfo = new ProcessStartInfo
             {
                 FileName = steamCmdPath,
@@ -288,23 +271,22 @@ namespace SteamDownloader
                 using var process = Process.Start(startInfo);
                 if (process == null)
                 {
-                    Log($"Failed to start steamcmd for item {id}.", ConsoleColor.Red);
-                    UpdateStatus($"Error: Failed to download item {id}");
-                    failed.Add(id);
+                    Log($"Failed to start steamcmd for item {workshopId}.", ConsoleColor.Red);
+                    UpdateStatus($"Error: Failed to download item {workshopId}");
+                    failed.Add(workshopId);
                     return;
                 }
 
                 bool itemError = false;
-
                 var outputTask = Task.Run(async () =>
                 {
                     string? line;
                     while ((line = await process.StandardOutput.ReadLineAsync()) != null)
                     {
-                        // Filter and log only relevant messages
+                        cancellationToken.ThrowIfCancellationRequested();
                         if (line.Contains("ERROR", StringComparison.OrdinalIgnoreCase))
                         {
-                            Log($"Error downloading item {id}: {line}", ConsoleColor.Red);
+                            Log($"Error downloading item {workshopId}: {line}", ConsoleColor.Red);
                             itemError = true;
                         }
                         else if (line.Contains("progress:", StringComparison.OrdinalIgnoreCase) || line.Contains("%"))
@@ -313,59 +295,51 @@ namespace SteamDownloader
                             if (match.Success)
                             {
                                 double itemProgress = double.Parse(match.Groups[1].Value);
-                                // Calculate total progress: completed items + current item progress
                                 double totalProgress = ((completedItems + (itemProgress / 100.0)) * 100.0) / totalItems;
                                 Dispatcher.Invoke(() => DownloadProgressBar.Value = totalProgress);
-                                Log($"Progress for item {id}: {itemProgress}%", ConsoleColor.Cyan);
+                                Log($"Progress: {itemProgress}%", ConsoleColor.Cyan);
                             }
                         }
                     }
-                });
+                }, cancellationToken);
 
                 var errorTask = Task.Run(async () =>
                 {
                     string? line;
                     while ((line = await process.StandardError.ReadLineAsync()) != null)
                     {
-                        Log($"Error downloading item {id}: {line}", ConsoleColor.Red);
+                        cancellationToken.ThrowIfCancellationRequested();
+                        Log($"Error downloading item {workshopId}: {line}", ConsoleColor.Red);
                         itemError = true;
                     }
-                });
+                }, cancellationToken);
 
                 await Task.WhenAll(process.WaitForExitAsync(), outputTask, errorTask);
 
                 if (!itemError && process.ExitCode == 0)
                 {
-                    Log($"Success: Item {id} downloaded.", ConsoleColor.Green);
-                    successful.Add(id);
+                    Log($"Success: Item {workshopId} '{itemName}' downloaded.", ConsoleColor.Green);
+                    successful.Add(workshopId);
                 }
                 else
                 {
-                    Log($"Error: Item {id} failed to download.", ConsoleColor.Red);
-                    UpdateStatus($"Error: Item {id} failed");
-                    failed.Add(id);
+                    Log($"Error: Item {workshopId} failed to download.", ConsoleColor.Red);
+                    UpdateStatus($"Error: Item {workshopId} failed");
+                    failed.Add(workshopId);
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                Log($"Download of item {workshopId} cancelled.", ConsoleColor.Yellow);
+                UpdateStatus($"Download cancelled");
+                failed.Add(workshopId);
             }
             catch (Exception ex)
             {
-                Log($"Error downloading item {id}: {ex.Message}", ConsoleColor.Red);
-                UpdateStatus($"Error: Item {id} failed");
-                failed.Add(id);
+                Log($"Error downloading item {workshopId}: {ex.Message}", ConsoleColor.Red);
+                UpdateStatus($"Error: Item {workshopId} failed");
+                failed.Add(workshopId);
             }
-        }
-
-        private void PrintResults()
-        {
-            Log("\n===== COLLECTION DOWNLOAD COMPLETED =====", ConsoleColor.White);
-            UpdateStatus("Download completed");
-
-            Log("Total items downloaded:", ConsoleColor.Green);
-            foreach (string id in successful) Log(id, ConsoleColor.Green);
-            Log($"Total: {successful.Count}", ConsoleColor.Green);
-
-            Log("\nFailed items:", ConsoleColor.Red);
-            foreach (string id in failed) Log(id, ConsoleColor.Red);
-            Log($"Total: {failed.Count}", ConsoleColor.Red);
         }
 
         private void Log(string message, ConsoleColor color)
@@ -382,7 +356,7 @@ namespace SteamDownloader
                         ConsoleColor.Green => Brushes.GreenYellow,
                         ConsoleColor.Yellow => Brushes.Yellow,
                         ConsoleColor.Cyan => Brushes.Cyan,
-                        ConsoleColor.White => Brushes.White,
+                        ConsoleColor.White => Brushes.WhiteSmoke,
                         _ => Brushes.Gray
                     }
                 };
