@@ -26,6 +26,7 @@
 - 1️⃣ Double-click **`SteamCollectionDownloader.exe`**  
 - 2️⃣ Insert the collection URL (e.g. `https://steamcommunity.com/sharedfiles/filedetails/?id=123456789`)  
 - 3️⃣ Click **Start** to download all items in the collection  
+- 4️⃣ Enjoy your game!
 
 
 
