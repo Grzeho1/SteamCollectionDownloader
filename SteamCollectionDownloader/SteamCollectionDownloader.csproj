@@ -12,4 +12,10 @@
 		<PackageReference Include="HtmlAgilityPack" Version="1.11.71" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Update="Steamcmd\steamcmd.exe">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+
 </Project>
