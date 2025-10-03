@@ -34,12 +34,12 @@
 
 
 <p align="center">
-  <a href="https://github.com/Grzeho1/SteamCollectionDownloader/stargazers">
+  <a href="https://github.com/Grzeho1/SteamCollectionDownloader">
     <img src="https://img.shields.io/badge/⭐%20Give%20this%20project%20a%20STAR!-ffcc00?style=for-the-badge&logo=github&logoColor=black" width="400" alt="Star this repo"/>
   </a>
 </p>
 <p align="center">
-  <b>If you find this project useful, please give it a star — it really helps! 🙌</b>
+  <b>If you find this project useful, please give it a star 🙌</b>
 </p>
 
 > [!TIP]  
