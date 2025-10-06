@@ -286,6 +286,7 @@ namespace SteamDownloader
                     while ((line = await process.StandardOutput.ReadLineAsync()) != null)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
+
                         if (line.Contains("ERROR", StringComparison.OrdinalIgnoreCase))
                         {
                             Log($"Error downloading item {workshopId}: {line}", ConsoleColor.Red);
@@ -323,11 +324,19 @@ namespace SteamDownloader
                     Log($"Success: Item {workshopId} '{itemName}' downloaded.", ConsoleColor.Green);
                     successful.Add(workshopId);
                 }
+                else if (Directory.Exists(Path.Combine(Path.GetDirectoryName(steamCmdPath), "steamapps", "workshop", "content", gameId, workshopId)) &&
+                         Directory.GetFiles(Path.Combine(Path.GetDirectoryName(steamCmdPath), "steamapps", "workshop", "content", gameId, workshopId), "*", SearchOption.AllDirectories).Any())
+                {
+                    
+                    Log($"Item {workshopId} '{itemName}' skipped (already exists).", ConsoleColor.Gray);
+                }
                 else
                 {
                     Log($"Error: Item {workshopId} failed to download.", ConsoleColor.Red);
                     UpdateStatus($"Error: Item {workshopId} failed");
                     failed.Add(workshopId);
+
+                    DeleteFailed(gameId, workshopId);
                 }
             }
             catch (OperationCanceledException)
@@ -344,6 +353,36 @@ namespace SteamDownloader
             }
         }
 
+
+        private void DeleteFailed(string gameId, string itemId)
+        {
+
+            try
+            {
+                string steamRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Steamcmd"));
+                string itemPath = Path.Combine(steamRoot, "steamapps", "workshop", "content", gameId, itemId);
+
+                if (Directory.Exists(itemPath))
+                {
+                    Log($"Deleting folder for failed item {itemId}...", ConsoleColor.Yellow);
+                    Directory.Delete(itemPath, true);
+                    Log($"Deleted folder for failed item {itemId}.", ConsoleColor.Yellow);
+                }
+                else
+                {
+                    Log($"No folder found for failed item {itemId}.", ConsoleColor.Gray);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"Failed to delete folder for {itemId}: {ex.Message}", ConsoleColor.Red);
+            }
+
+        }
+
+
+
+ 
         private void Log(string message, ConsoleColor color)
         {
             string timeStamped = $"[{DateTime.Now:HH:mm:ss}] {message}";
