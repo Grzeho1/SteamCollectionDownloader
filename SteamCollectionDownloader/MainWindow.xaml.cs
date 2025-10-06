@@ -344,6 +344,32 @@ namespace SteamDownloader
             }
         }
 
+
+        private void DeleteFailed(string gameId, string itemId)
+        {
+
+            try
+            {
+                string itemPath = Path.Combine(Path.GetDirectoryName(steamCmdPath), "steamapps", "workshop", "content", gameId, itemId);
+                if (Directory.Exists(itemPath))
+                {
+                    Directory.Delete(itemPath, true);
+                    Log($"Deleted incomplete item {itemId} for AppID {gameId}.", ConsoleColor.Yellow);
+                }
+                else
+                {
+                    Log($"No folder found for failed item {itemId}.", ConsoleColor.Gray);
+                }
+            } catch(Exception ex)
+            {
+                Log($"Failed to delete folder for item {itemId}.:{ex.Message}", ConsoleColor.Red);
+            }
+
+        }
+
+
+
+ 
         private void Log(string message, ConsoleColor color)
         {
             string timeStamped = $"[{DateTime.Now:HH:mm:ss}] {message}";
