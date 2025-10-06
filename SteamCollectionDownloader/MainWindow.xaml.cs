@@ -286,6 +286,7 @@ namespace SteamDownloader
                     while ((line = await process.StandardOutput.ReadLineAsync()) != null)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
+
                         if (line.Contains("ERROR", StringComparison.OrdinalIgnoreCase))
                         {
                             Log($"Error downloading item {workshopId}: {line}", ConsoleColor.Red);
@@ -323,11 +324,19 @@ namespace SteamDownloader
                     Log($"Success: Item {workshopId} '{itemName}' downloaded.", ConsoleColor.Green);
                     successful.Add(workshopId);
                 }
+                else if (Directory.Exists(Path.Combine(Path.GetDirectoryName(steamCmdPath), "steamapps", "workshop", "content", gameId, workshopId)) &&
+                         Directory.GetFiles(Path.Combine(Path.GetDirectoryName(steamCmdPath), "steamapps", "workshop", "content", gameId, workshopId), "*", SearchOption.AllDirectories).Any())
+                {
+                    
+                    Log($"Item {workshopId} '{itemName}' skipped (already exists).", ConsoleColor.Gray);
+                }
                 else
                 {
                     Log($"Error: Item {workshopId} failed to download.", ConsoleColor.Red);
                     UpdateStatus($"Error: Item {workshopId} failed");
                     failed.Add(workshopId);
+
+                    DeleteFailed(gameId, workshopId);
                 }
             }
             catch (OperationCanceledException)
