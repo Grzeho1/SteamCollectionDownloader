@@ -359,19 +359,23 @@ namespace SteamDownloader
 
             try
             {
-                string itemPath = Path.Combine(Path.GetDirectoryName(steamCmdPath), "steamapps", "workshop", "content", gameId, itemId);
+                string steamRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Steamcmd"));
+                string itemPath = Path.Combine(steamRoot, "steamapps", "workshop", "content", gameId, itemId);
+
                 if (Directory.Exists(itemPath))
                 {
+                    Log($"Deleting folder for failed item {itemId}...", ConsoleColor.Yellow);
                     Directory.Delete(itemPath, true);
-                    Log($"Deleted incomplete item {itemId} for AppID {gameId}.", ConsoleColor.Yellow);
+                    Log($"Deleted folder for failed item {itemId}.", ConsoleColor.Yellow);
                 }
                 else
                 {
                     Log($"No folder found for failed item {itemId}.", ConsoleColor.Gray);
                 }
-            } catch(Exception ex)
+            }
+            catch (Exception ex)
             {
-                Log($"Failed to delete folder for item {itemId}.:{ex.Message}", ConsoleColor.Red);
+                Log($"Failed to delete folder for {itemId}: {ex.Message}", ConsoleColor.Red);
             }
 
         }
