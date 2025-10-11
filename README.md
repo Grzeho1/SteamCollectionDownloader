@@ -29,18 +29,9 @@
 - 1️⃣ Double-click **`SteamCollectionDownloader.exe`**  
 - 2️⃣ Insert the collection URL (e.g. `https://steamcommunity.com/sharedfiles/filedetails/?id=123456789`)  
 - 3️⃣ Click **Start** to download all items in the collection  
-- 4️⃣ Enjoy your game!
 
 
 
-<p align="center">
-  <a href="https://github.com/Grzeho1/SteamCollectionDownloader">
-    <img src="https://img.shields.io/badge/⭐%20Give%20this%20project%20a%20STAR!-ffcc00?style=for-the-badge&logo=github&logoColor=black" width="400" alt="Star this repo"/>
-  </a>
-</p>
-<p align="center">
-  <b>If you find this project useful, please give it a star 🙌</b>
-</p>
 
 > [!TIP]  
 > ![Preview](https://github.com/user-attachments/assets/34a254e6-e4be-451d-ba2c-96f31e9cc6d8)
