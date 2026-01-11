@@ -15,20 +15,20 @@
 
 ***With this downloader, you can download all items from a Steam Workshop collection at once — not one by one, and even if you don't own the game on Steam.***
 
-## ✨ Features
-- 📥 Download entire Steam Workshop collections with a single click  
-- 📊 Displays item names, progress, and status in a clean console log  
-- 🔄 Automatically downloads **SteamCMD** if not found  
+##  Features
+-  Download entire Steam Workshop collections with a single click  
+-  Displays item names, progress, and status in a clean console log  
+-  Automatically downloads **SteamCMD** if not found  
 
 
 ## 🛠 How to Use
 
-## - 0️⃣ [ CLICK To Download Latest Release](https://github.com/Grzeho1/SteamCollectionDownloader/releases/tag/v1.0)
+## - 0️ [ CLICK To Download Latest Release](https://github.com/Grzeho1/SteamCollectionDownloader/releases/tag/v1.0)
 
 
-- 1️⃣ Double-click **`SteamCollectionDownloader.exe`**  
-- 2️⃣ Insert the collection URL (e.g. `https://steamcommunity.com/sharedfiles/filedetails/?id=123456789`)  
-- 3️⃣ Click **Start** to download all items in the collection  
+- 1️ Double-click **`SteamCollectionDownloader.exe`**  
+- 2️ Insert the collection URL (e.g. `https://steamcommunity.com/sharedfiles/filedetails/?id=123456789`)  
+- 3️ Click **Start** to download all items in the collection  
 
 
 
@@ -43,6 +43,6 @@
 - If you are experiencing any issues with failed downloading,try delete : D:\steamcmd\steamapps\workshop/appworkshop_{gameID}.acf
 
 > [!TIP]  
-> 💡 If you have any issues or ideas, please let me know!
+>  If you have any issues or ideas, please let me know!
 
 
