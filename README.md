@@ -21,9 +21,9 @@
 -  Automatically downloads **SteamCMD** if not found  
 
 
-## 🛠 How to Use
+##  How to Use
 
-## - 0️ [ CLICK To Download Latest Release](https://github.com/Grzeho1/SteamCollectionDownloader/releases/tag/v1.0)
+## -  [ CLICK To Download Latest Release](https://github.com/Grzeho1/SteamCollectionDownloader/releases/tag/v1.0)
 
 
 - 1️ Double-click **`SteamCollectionDownloader.exe`**  
