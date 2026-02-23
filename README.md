@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://github.com/Grzeho1/SteamCollectionDownloader/releases/tag/v1.0">
-    <img src="https://img.shields.io/github/v/release/Grzeho1/SteamCollectionDownloader?style=for-the-badge&color=brightgreen&logo=github" alt="Latest Release">
+    <img src="https://img.shields.io/badge/release-v1.0-brightgreen?style=for-the-badge&logo=github" alt="Latest Release">
   </a>
   <a href="https://github.com/Grzeho1/SteamCollectionDownloader/releases">
     <img src="https://img.shields.io/github/downloads/Grzeho1/SteamCollectionDownloader/total?style=for-the-badge&color=blue&logo=steam" alt="Downloads">
