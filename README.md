@@ -41,7 +41,8 @@
 
 
 > [!TIP]  
-> ![Preview](https://github.com/user-attachments/assets/34a254e6-e4be-451d-ba2c-96f31e9cc6d8)
+> ![Preview](https://github.com/user-attachments/assets/55b13c0e-2f49-4c6f-b1ca-1b02ad38cb5b)
+
 
 
 
