@@ -19,6 +19,7 @@
 -  Download entire Steam Workshop collections with a single click  
 -  Displays item names, progress, and status in a clean console log  
 -  Automatically downloads **SteamCMD** if not found  
+-  Optional login with your own Steam account (required for workshop items of paid games you own)
 
 
 ##  How to Use
@@ -28,7 +29,13 @@
 
 - 1️ Double-click **`SteamCollectionDownloader.exe`**  
 - 2️ Insert the collection URL (e.g. `https://steamcommunity.com/sharedfiles/filedetails/?id=123456789`)  
-- 3️ Click **Start** to download all items in the collection  
+- 3️ Choose login mode:
+  - **Anonymous** — works for workshop items of free-to-play games  
+  - **My Steam account** — required for workshop items of paid games you own. Enter username + password. On the first login a dialog will ask for your **Steam Guard code** (sent to your email or from the mobile authenticator app). Subsequent runs reuse the cached session and won't ask again.  
+- 4️ Click **Start** to download all items in the collection  
+
+> [!NOTE]  
+> Steam Guard code has a short validity (~10 minutes). If the code expires before you enter it, just start the download again and a fresh code will be sent.
 
 
 

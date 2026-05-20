@@ -131,72 +131,162 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <TextBlock Grid.Row="0" 
-                   Text="Steam Workshop Downloader" 
-                   FontSize="18" 
-                   FontWeight="SemiBold" 
+        <TextBlock Grid.Row="0"
+                   Text="Steam Workshop Downloader"
+                   FontSize="18"
+                   FontWeight="SemiBold"
                    FontFamily="Segoe UI"
-                   Foreground="#E0E0E0" 
+                   Foreground="#E0E0E0"
                    Margin="0,0,0,8"/>
 
         <!-- URL input -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
-            <TextBlock Text="Collection URL:" 
-                       Width="70" 
-                       FontSize="11" 
+            <TextBlock Text="Collection URL:"
+                       Width="70"
+                       FontSize="11"
                        FontFamily="Segoe UI"
-                       VerticalAlignment="Center" 
+                       VerticalAlignment="Center"
                        Foreground="#B0BEC5"/>
-            <TextBox x:Name="CollectionUrlTextBox" 
-                     Width="400" 
-                     Margin="5,0,0,0" 
+            <TextBox x:Name="CollectionUrlTextBox"
+                     Width="400"
+                     Margin="5,0,0,0"
                      AcceptsReturn="False"
                      ToolTip="Enter the Steam Workshop collection URL"/>
         </StackPanel>
 
+        <!-- Login section -->
+        <Border Grid.Row="2"
+                BorderBrush="#616161"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="8"
+                Margin="0,0,0,8">
+            <StackPanel Orientation="Vertical">
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                    <TextBlock Text="Login:"
+                               Width="70"
+                               FontSize="11"
+                               FontFamily="Segoe UI"
+                               VerticalAlignment="Center"
+                               Foreground="#B0BEC5"/>
+                    <RadioButton x:Name="AnonymousRadio"
+                                 Content="Anonymous"
+                                 GroupName="LoginMode"
+                                 IsChecked="True"
+                                 Foreground="#E0E0E0"
+                                 FontSize="11"
+                                 FontFamily="Segoe UI"
+                                 VerticalAlignment="Center"
+                                 Margin="5,0,15,0"
+                                 Checked="LoginMode_Changed"/>
+                    <RadioButton x:Name="AccountRadio"
+                                 Content="My Steam account"
+                                 GroupName="LoginMode"
+                                 Foreground="#E0E0E0"
+                                 FontSize="11"
+                                 FontFamily="Segoe UI"
+                                 VerticalAlignment="Center"
+                                 Checked="LoginMode_Changed"/>
+                </StackPanel>
+                <Grid x:Name="CredentialsPanel" Visibility="Collapsed" Margin="75,4,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0"
+                               Text="Username:"
+                               Width="70"
+                               FontSize="11"
+                               FontFamily="Segoe UI"
+                               VerticalAlignment="Center"
+                               Foreground="#B0BEC5"/>
+                    <TextBox Grid.Row="0" Grid.Column="1"
+                             x:Name="UsernameTextBox"
+                             Width="250"
+                             HorizontalAlignment="Left"
+                             Margin="5,0,0,4"/>
+
+                    <TextBlock Grid.Row="1" Grid.Column="0"
+                               Text="Password:"
+                               Width="70"
+                               FontSize="11"
+                               FontFamily="Segoe UI"
+                               VerticalAlignment="Center"
+                               Foreground="#B0BEC5"/>
+                    <PasswordBox Grid.Row="1" Grid.Column="1"
+                                 x:Name="PasswordBox"
+                                 Width="250"
+                                 HorizontalAlignment="Left"
+                                 Margin="5,0,0,4"
+                                 Background="#2D2D2D"
+                                 Foreground="#E0E0E0"
+                                 BorderBrush="#616161"
+                                 BorderThickness="1"
+                                 Padding="6"
+                                 FontSize="11"
+                                 FontFamily="Segoe UI"/>
+
+                    <CheckBox Grid.Row="2" Grid.Column="1"
+                              x:Name="RememberPasswordCheckBox"
+                              Content="Remember password (DPAPI encrypted)"
+                              Margin="5,4,0,0"
+                              Foreground="#B0BEC5"
+                              FontSize="11"
+                              FontFamily="Segoe UI"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+
         <!-- Log output -->
-        <ListBox x:Name="LogListBox" 
-                 Grid.Row="2" 
+        <ListBox x:Name="LogListBox"
+                 Grid.Row="3"
                  Margin="0,0,0,8"/>
 
         <!-- Progress section -->
-        <StackPanel Grid.Row="3" Margin="0,0,0,8">
-            <TextBlock x:Name="StatusTextBlock" 
-                       Text="Ready" 
-                       FontSize="10" 
+        <StackPanel Grid.Row="4" Margin="0,0,0,8">
+            <TextBlock x:Name="StatusTextBlock"
+                       Text="Ready"
+                       FontSize="10"
                        FontFamily="Segoe UI"
-                       Foreground="#B0BEC5" 
+                       Foreground="#B0BEC5"
                        Margin="0,0,0,3"/>
-            <ProgressBar x:Name="DownloadProgressBar" 
-                         Maximum="100" 
+            <ProgressBar x:Name="DownloadProgressBar"
+                         Maximum="100"
                          Value="0"/>
         </StackPanel>
 
         <!-- Buttons -->
-        <StackPanel Grid.Row="4" 
-                    Orientation="Horizontal" 
+        <StackPanel Grid.Row="5"
+                    Orientation="Horizontal"
                     HorizontalAlignment="Right">
-            <Button x:Name="OpenFolderButton" 
-                    Content="Open Folder" 
-                    Width="80" 
+            <Button x:Name="OpenFolderButton"
+                    Content="Open Folder"
+                    Width="80"
                     Margin="0,0,5,0"
                     ToolTip="Open the folder containing downloaded items"
                     Click="OpenFolderButton_Click"/>
-            <Button x:Name="CancelButton" 
-                    Content="Cancel" 
-                    Width="80" 
+            <Button x:Name="CancelButton"
+                    Content="Cancel"
+                    Width="80"
                     Margin="0,0,5,0"
                     ToolTip="Cancel the current download"
                     Click="CancelButton_Click"/>
-            <Button x:Name="StartButton" 
-                    Content="Start download" 
-                    Width="90" 
+            <Button x:Name="StartButton"
+                    Content="Start download"
+                    Width="90"
                     Background="Green"
                     Click="StartButton_Click"/>
         </StackPanel>

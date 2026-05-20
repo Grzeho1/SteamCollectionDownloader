@@ -16,7 +16,6 @@ namespace SteamDownloader
 {
     public partial class MainWindow : Window
     {
-        private readonly string LogFile = $"download_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.log";
         private readonly string ConfigFile = "config.json";
         private readonly HashSet<string> successful = new HashSet<string>();
         private readonly HashSet<string> failed = new HashSet<string>();
@@ -28,40 +27,90 @@ namespace SteamDownloader
         public MainWindow()
         {
             InitializeComponent();
-            
+            LoadConfig();
         }
 
-        private void LoadLastUrl()
+        private Dictionary<string, string> ReadConfig()
         {
             try
             {
                 if (File.Exists(ConfigFile))
                 {
                     var json = File.ReadAllText(ConfigFile);
-                    var config = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
-                    if (config != null && config.TryGetValue("LastUrl", out var url))
-                    {
-                        CollectionUrlTextBox.Text = url;
-                    }
+                    return JsonSerializer.Deserialize<Dictionary<string, string>>(json) ?? new Dictionary<string, string>();
                 }
             }
             catch (Exception ex)
             {
-                Log($"Failed to load last URL: {ex.Message}", ConsoleColor.Yellow);
+                Log($"Failed to read config: {ex.Message}", ConsoleColor.Yellow);
             }
+            return new Dictionary<string, string>();
         }
 
-        private void SaveLastUrl(string url)
+        private void WriteConfig(Dictionary<string, string> config)
         {
             try
             {
-                var config = new Dictionary<string, string> { { "LastUrl", url } };
                 File.WriteAllText(ConfigFile, JsonSerializer.Serialize(config));
             }
             catch (Exception ex)
             {
-                Log($"Failed to save last URL: {ex.Message}", ConsoleColor.Yellow);
+                Log($"Failed to write config: {ex.Message}", ConsoleColor.Yellow);
             }
+        }
+
+        private void LoadConfig()
+        {
+            var config = ReadConfig();
+            if (config.TryGetValue("LastUrl", out var url))
+            {
+                CollectionUrlTextBox.Text = url;
+            }
+            if (config.TryGetValue("LastUsername", out var user) && !string.IsNullOrWhiteSpace(user))
+            {
+                UsernameTextBox.Text = user;
+            }
+            if (config.TryGetValue("EncryptedPassword", out var enc) && !string.IsNullOrWhiteSpace(enc))
+            {
+                try
+                {
+                    PasswordBox.Password = CredentialStore.Decrypt(enc);
+                    RememberPasswordCheckBox.IsChecked = true;
+                }
+                catch (Exception ex)
+                {
+                    Log($"Failed to decrypt saved password: {ex.Message}", ConsoleColor.Yellow);
+                }
+            }
+        }
+
+        private void SaveConfig(string url, string? username, string? encryptedPassword)
+        {
+            var config = ReadConfig();
+            config["LastUrl"] = url ?? string.Empty;
+            if (username != null)
+            {
+                config["LastUsername"] = username;
+            }
+            else
+            {
+                config.Remove("LastUsername");
+            }
+            if (encryptedPassword != null)
+            {
+                config["EncryptedPassword"] = encryptedPassword;
+            }
+            else
+            {
+                config.Remove("EncryptedPassword");
+            }
+            WriteConfig(config);
+        }
+
+        private void LoginMode_Changed(object sender, RoutedEventArgs e)
+        {
+            if (CredentialsPanel == null) return;
+            CredentialsPanel.Visibility = (AccountRadio.IsChecked == true) ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private async void StartButton_Click(object sender, RoutedEventArgs e)
@@ -85,7 +134,6 @@ namespace SteamDownloader
             }
 
             string collectionUrl = CollectionUrlTextBox.Text;
-            SaveLastUrl(collectionUrl);
 
             if (string.IsNullOrWhiteSpace(collectionUrl))
             {
@@ -96,6 +144,65 @@ namespace SteamDownloader
                 OpenFolderButton.IsEnabled = true;
                 return;
             }
+
+            bool useAccount = AccountRadio.IsChecked == true;
+            string loginUser = "anonymous";
+            string? usernameToSave = null;
+            string? encryptedPasswordToSave = null;
+
+            if (useAccount)
+            {
+                string username = UsernameTextBox.Text.Trim();
+                string password = PasswordBox.Password;
+
+                if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+                {
+                    Log("Username and password required for account login.", ConsoleColor.Yellow);
+                    UpdateStatus("Error: Missing credentials");
+                    StartButton.IsEnabled = true;
+                    CancelButton.IsEnabled = false;
+                    OpenFolderButton.IsEnabled = true;
+                    return;
+                }
+
+                Log($"Authenticating as '{username}'...", ConsoleColor.Cyan);
+                UpdateStatus("Authenticating...");
+
+                var authResult = await SteamAuth.AuthenticateAsync(
+                    steamCmdPath,
+                    username,
+                    password,
+                    PromptForGuardCodeAsync,
+                    line => Log($"[auth] {line}", ConsoleColor.Gray),
+                    cancellationTokenSource.Token);
+
+                if (!authResult.Success)
+                {
+                    Log($"Authentication failed: {authResult.ErrorMessage}", ConsoleColor.Red);
+                    UpdateStatus("Authentication failed");
+                    StartButton.IsEnabled = true;
+                    CancelButton.IsEnabled = false;
+                    OpenFolderButton.IsEnabled = true;
+                    return;
+                }
+
+                Log("Authentication successful.", ConsoleColor.Green);
+                loginUser = username;
+                usernameToSave = username;
+                if (RememberPasswordCheckBox.IsChecked == true)
+                {
+                    try
+                    {
+                        encryptedPasswordToSave = CredentialStore.Encrypt(password);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log($"Failed to encrypt password: {ex.Message}", ConsoleColor.Yellow);
+                    }
+                }
+            }
+
+            SaveConfig(collectionUrl, usernameToSave, encryptedPasswordToSave);
 
             List<(string gameId, string workshopId, string itemName)> ids;
             try
@@ -154,7 +261,7 @@ namespace SteamDownloader
                     }
 
                     UpdateStatus($"Downloading item {workshopId} '{itemName}' for AppID {gameId} ({completedItems + 1}/{totalItems})...");
-                    await DownloadItem(gameId, workshopId, itemName, steamCmdPath, successful, failed, cancellationTokenSource.Token);
+                    await DownloadItem(gameId, workshopId, itemName, steamCmdPath, loginUser, successful, failed, cancellationTokenSource.Token);
                     completedItems++;
                     double totalProgress = (completedItems * 100.0) / totalItems;
                     DownloadProgressBar.Value = totalProgress;
@@ -253,11 +360,11 @@ namespace SteamDownloader
             return null;
         }
 
-        private async Task DownloadItem(string gameId, string workshopId, string itemName, string steamCmdPath, HashSet<string> successful, HashSet<string> failed, CancellationToken cancellationToken)
+        private async Task DownloadItem(string gameId, string workshopId, string itemName, string steamCmdPath, string loginUser, HashSet<string> successful, HashSet<string> failed, CancellationToken cancellationToken)
         {
             Log($"Starting download of item {workshopId} '{itemName}' for AppID {gameId}", ConsoleColor.Cyan);
 
-            string arguments = $"+login anonymous +workshop_download_item {gameId} {workshopId} +quit";
+            string arguments = $"+login {loginUser} +workshop_download_item {gameId} {workshopId} +quit";
             var startInfo = new ProcessStartInfo
             {
                 FileName = steamCmdPath,
@@ -383,6 +490,19 @@ namespace SteamDownloader
 
 
  
+        private Task<string?> PromptForGuardCodeAsync()
+        {
+            var tcs = new TaskCompletionSource<string?>();
+            Dispatcher.Invoke(() =>
+            {
+                UpdateStatus("Waiting for Steam Guard code...");
+                var dialog = new SteamGuardDialog { Owner = this };
+                bool? result = dialog.ShowDialog();
+                tcs.SetResult(result == true ? dialog.Code : null);
+            });
+            return tcs.Task;
+        }
+
         private void Log(string message, ConsoleColor color)
         {
             string timeStamped = $"[{DateTime.Now:HH:mm:ss}] {message}";
