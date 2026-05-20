@@ -361,3 +361,7 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Steamcmd runtime files (auto-generated when steamcmd runs)
+SteamCollectionDownloader/Steamcmd/**
+!SteamCollectionDownloader/Steamcmd/steamcmd.exe
