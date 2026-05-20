@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -237,34 +238,33 @@ namespace SteamDownloader
             DownloadProgressBar.Value = 0;
             Log($"Total items to process: {totalItems}", ConsoleColor.Cyan);
 
+            var toDownload = new List<(string gameId, string workshopId, string itemName)>();
+            foreach (var item in ids)
+            {
+                if (cancellationTokenSource.Token.IsCancellationRequested) break;
+
+                string itemPath = Path.Combine(Path.GetDirectoryName(steamCmdPath), "steamapps", "workshop", "content", item.gameId, item.workshopId);
+                if (Directory.Exists(itemPath) && Directory.GetFiles(itemPath, "*", SearchOption.AllDirectories).Any())
+                {
+                    Log($"Item {item.workshopId} '{item.itemName}' already exists.", ConsoleColor.Green);
+                    successful.Add(item.workshopId);
+                    completedItems++;
+                    DownloadProgressBar.Value = (completedItems * 100.0) / totalItems;
+                }
+                else
+                {
+                    toDownload.Add(item);
+                }
+            }
+
             try
             {
-                foreach (var (gameId, workshopId, itemName) in ids)
+                if (toDownload.Count > 0 && !cancellationTokenSource.Token.IsCancellationRequested)
                 {
-                    if (cancellationTokenSource.Token.IsCancellationRequested)
-                    {
-                        Log("Download cancelled by user.", ConsoleColor.Yellow);
-                        UpdateStatus("Download cancelled");
-                        break;
-                    }
-
-                    string itemPath = Path.Combine(Path.GetDirectoryName(steamCmdPath), "steamapps", "workshop", "content", gameId, workshopId);
-                    if (Directory.Exists(itemPath) && Directory.GetFiles(itemPath, "*", SearchOption.AllDirectories).Any())
-                    {
-                        Log($"Item {workshopId} '{itemName}' already exists for AppID {gameId}.", ConsoleColor.Green);
-                        successful.Add(workshopId);
-                        completedItems++;
-                        double itemProgress = (completedItems * 100.0) / totalItems;
-                        DownloadProgressBar.Value = itemProgress;
-                        UpdateStatus($"Item {workshopId} skipped ({completedItems}/{totalItems})");
-                        continue;
-                    }
-
-                    UpdateStatus($"Downloading item {workshopId} '{itemName}' for AppID {gameId} ({completedItems + 1}/{totalItems})...");
-                    await DownloadItem(gameId, workshopId, itemName, steamCmdPath, loginUser, successful, failed, cancellationTokenSource.Token);
-                    completedItems++;
-                    double totalProgress = (completedItems * 100.0) / totalItems;
-                    DownloadProgressBar.Value = totalProgress;
+                    Log($"Batching {toDownload.Count} items into one steamcmd run.", ConsoleColor.Cyan);
+                    Log("This may take a while depending on collection size - download runs in the background, you can keep using your PC.", ConsoleColor.Yellow);
+                    UpdateStatus($"Downloading {toDownload.Count} items in background - this may take a while...");
+                    await DownloadAll(toDownload, steamCmdPath, loginUser, successful, failed, cancellationTokenSource.Token);
                 }
             }
             catch (OperationCanceledException)
@@ -360,103 +360,141 @@ namespace SteamDownloader
             return null;
         }
 
-        private async Task DownloadItem(string gameId, string workshopId, string itemName, string steamCmdPath, string loginUser, HashSet<string> successful, HashSet<string> failed, CancellationToken cancellationToken)
+        private async Task DownloadAll(List<(string gameId, string workshopId, string itemName)> items, string steamCmdPath, string loginUser, HashSet<string> successful, HashSet<string> failed, CancellationToken cancellationToken)
         {
-            Log($"Starting download of item {workshopId} '{itemName}' for AppID {gameId}", ConsoleColor.Cyan);
+            if (items.Count == 0) return;
 
-            string arguments = $"+login {loginUser} +workshop_download_item {gameId} {workshopId} +quit";
+            var nameMap = items.ToDictionary(i => i.workshopId, i => (i.gameId, i.itemName));
+
+            var sb = new StringBuilder();
+            sb.Append($"+login {loginUser}");
+            foreach (var (gameId, workshopId, _) in items)
+            {
+                sb.Append($" +workshop_download_item {gameId} {workshopId}");
+            }
+            sb.Append(" +quit");
+
             var startInfo = new ProcessStartInfo
             {
                 FileName = steamCmdPath,
-                Arguments = arguments,
+                Arguments = sb.ToString(),
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
-                CreateNoWindow = true
+                CreateNoWindow = true,
+                StandardOutputEncoding = Encoding.UTF8
             };
 
-            try
+            using var process = Process.Start(startInfo);
+            if (process == null)
             {
-                using var process = Process.Start(startInfo);
-                if (process == null)
+                Log("Failed to start steamcmd.", ConsoleColor.Red);
+                foreach (var item in items) failed.Add(item.workshopId);
+                return;
+            }
+
+            using var killOnCancel = cancellationToken.Register(() =>
+            {
+                try { if (!process.HasExited) process.Kill(); } catch { }
+            });
+
+            void ParseLine(string line)
+            {
+                if (string.IsNullOrWhiteSpace(line)) return;
+
+                var startMatch = Regex.Match(line, @"Downloading item (\d+)");
+                if (startMatch.Success)
                 {
-                    Log($"Failed to start steamcmd for item {workshopId}.", ConsoleColor.Red);
-                    UpdateStatus($"Error: Failed to download item {workshopId}");
-                    failed.Add(workshopId);
+                    string id = startMatch.Groups[1].Value;
+                    string name = nameMap.TryGetValue(id, out var info) ? info.itemName : id;
+                    UpdateStatus($"Downloading '{name}' ({completedItems + 1}/{totalItems})");
+                    Log($"Downloading {id} '{name}'", ConsoleColor.Cyan);
                     return;
                 }
 
-                bool itemError = false;
-                var outputTask = Task.Run(async () =>
+                var successMatch = Regex.Match(line, @"Success\..*?item (\d+)");
+                if (successMatch.Success)
                 {
-                    string? line;
-                    while ((line = await process.StandardOutput.ReadLineAsync()) != null)
+                    string id = successMatch.Groups[1].Value;
+                    string name = nameMap.TryGetValue(id, out var info) ? info.itemName : id;
+                    if (!successful.Contains(id))
                     {
-                        cancellationToken.ThrowIfCancellationRequested();
-
-                        if (line.Contains("ERROR", StringComparison.OrdinalIgnoreCase))
-                        {
-                            Log($"Error downloading item {workshopId}: {line}", ConsoleColor.Red);
-                            itemError = true;
-                        }
-                        else if (line.Contains("progress:", StringComparison.OrdinalIgnoreCase) || line.Contains("%"))
-                        {
-                            var match = Regex.Match(line, @"progress: (\d+)%");
-                            if (match.Success)
-                            {
-                                double itemProgress = double.Parse(match.Groups[1].Value);
-                                double totalProgress = ((completedItems + (itemProgress / 100.0)) * 100.0) / totalItems;
-                                Dispatcher.Invoke(() => DownloadProgressBar.Value = totalProgress);
-                                Log($"Progress: {itemProgress}%", ConsoleColor.Cyan);
-                            }
-                        }
+                        successful.Add(id);
+                        Interlocked.Increment(ref completedItems);
+                        Dispatcher.Invoke(() => DownloadProgressBar.Value = (completedItems * 100.0) / totalItems);
                     }
-                }, cancellationToken);
+                    Log($"Success: {id} '{name}'", ConsoleColor.Green);
+                    return;
+                }
 
-                var errorTask = Task.Run(async () =>
+                var failMatch = Regex.Match(line, @"ERROR.*?[Dd]ownload(?:ing)? [Ii]tem (\d+).*?\((.+?)\)");
+                if (failMatch.Success)
                 {
-                    string? line;
-                    while ((line = await process.StandardError.ReadLineAsync()) != null)
+                    string id = failMatch.Groups[1].Value;
+                    string reason = failMatch.Groups[2].Value;
+                    string name = nameMap.TryGetValue(id, out var info) ? info.itemName : id;
+                    if (!failed.Contains(id))
                     {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        Log($"Error downloading item {workshopId}: {line}", ConsoleColor.Red);
-                        itemError = true;
+                        failed.Add(id);
+                        Interlocked.Increment(ref completedItems);
+                        Dispatcher.Invoke(() => DownloadProgressBar.Value = (completedItems * 100.0) / totalItems);
                     }
-                }, cancellationToken);
-
-                await Task.WhenAll(process.WaitForExitAsync(), outputTask, errorTask);
-
-                if (!itemError && process.ExitCode == 0)
-                {
-                    Log($"Success: Item {workshopId} '{itemName}' downloaded.", ConsoleColor.Green);
-                    successful.Add(workshopId);
+                    Log($"Failed: {id} '{name}' ({reason})", ConsoleColor.Red);
+                    if (nameMap.TryGetValue(id, out var fi)) DeleteFailed(fi.gameId, id);
+                    return;
                 }
-                else if (Directory.Exists(Path.Combine(Path.GetDirectoryName(steamCmdPath), "steamapps", "workshop", "content", gameId, workshopId)) &&
-                         Directory.GetFiles(Path.Combine(Path.GetDirectoryName(steamCmdPath), "steamapps", "workshop", "content", gameId, workshopId), "*", SearchOption.AllDirectories).Any())
-                {
-                    
-                    Log($"Item {workshopId} '{itemName}' skipped (already exists).", ConsoleColor.Gray);
-                }
-                else
-                {
-                    Log($"Error: Item {workshopId} failed to download.", ConsoleColor.Red);
-                    UpdateStatus($"Error: Item {workshopId} failed");
-                    failed.Add(workshopId);
+            }
 
-                    DeleteFailed(gameId, workshopId);
+            var outputTask = Task.Run(async () =>
+            {
+                string? line;
+                while ((line = await process.StandardOutput.ReadLineAsync()) != null)
+                {
+                    if (cancellationToken.IsCancellationRequested) return;
+                    ParseLine(line);
                 }
+            });
+
+            var errorTask = Task.Run(async () =>
+            {
+                string? line;
+                while ((line = await process.StandardError.ReadLineAsync()) != null)
+                {
+                    if (cancellationToken.IsCancellationRequested) return;
+                    if (line.Contains("ERROR", StringComparison.OrdinalIgnoreCase))
+                    {
+                        Log($"stderr: {line}", ConsoleColor.Red);
+                    }
+                }
+            });
+
+            try
+            {
+                await process.WaitForExitAsync();
+                await Task.WhenAll(outputTask, errorTask);
             }
             catch (OperationCanceledException)
             {
-                Log($"Download of item {workshopId} cancelled.", ConsoleColor.Yellow);
-                UpdateStatus($"Download cancelled");
-                failed.Add(workshopId);
+                Log("Download cancelled.", ConsoleColor.Yellow);
             }
-            catch (Exception ex)
+
+            foreach (var item in items)
             {
-                Log($"Error downloading item {workshopId}: {ex.Message}", ConsoleColor.Red);
-                UpdateStatus($"Error: Item {workshopId} failed");
-                failed.Add(workshopId);
+                if (successful.Contains(item.workshopId) || failed.Contains(item.workshopId)) continue;
+
+                string itemPath = Path.Combine(Path.GetDirectoryName(steamCmdPath) ?? string.Empty, "steamapps", "workshop", "content", item.gameId, item.workshopId);
+                if (Directory.Exists(itemPath) && Directory.GetFiles(itemPath, "*", SearchOption.AllDirectories).Any())
+                {
+                    successful.Add(item.workshopId);
+                    Log($"Success (verified on disk): {item.workshopId} '{item.itemName}'", ConsoleColor.Green);
+                }
+                else
+                {
+                    failed.Add(item.workshopId);
+                    Log($"Failed (no output, no files): {item.workshopId} '{item.itemName}'", ConsoleColor.Red);
+                }
+                Interlocked.Increment(ref completedItems);
+                Dispatcher.Invoke(() => DownloadProgressBar.Value = (completedItems * 100.0) / totalItems);
             }
         }
 
