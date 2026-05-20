@@ -30,8 +30,8 @@
 - 1️ Double-click **`SteamCollectionDownloader.exe`**  
 - 2️ Insert the collection URL (e.g. `https://steamcommunity.com/sharedfiles/filedetails/?id=123456789`)  
 - 3️ Choose login mode:
-  - **Anonymous** — works for workshop items of free-to-play games  
-  - **My Steam account** — required for workshop items of paid games you own. Enter username + password. On the first login a dialog will ask for your **Steam Guard code** (sent to your email or from the mobile authenticator app). Subsequent runs reuse the cached session and won't ask again.  
+  - **Anonymous**-works for workshop items of free-to-play games  
+  - **My Steam account**- required for workshop items of paid games you own. Enter username + password. On the first login a dialog will ask for your **Steam Guard code** (sent to your email or from the mobile authenticator app). Subsequent runs reuse the cached session and won't ask again.  
 - 4️ Click **Start** to download all items in the collection  
 
 > [!NOTE]  
