@@ -1,6 +1,6 @@
 <p align="center">
-  <a href="https://github.com/Grzeho1/SteamCollectionDownloader/releases/tag/v1.0">
-    <img src="https://img.shields.io/badge/release-v1.0-brightgreen?style=for-the-badge&logo=github" alt="Latest Release">
+  <a href="https://github.com/Grzeho1/SteamCollectionDownloader/releases/tag/v1.1">
+    <img src="https://img.shields.io/badge/release-v1.1-brightgreen?style=for-the-badge&logo=github" alt="Latest Release">
   </a>
   <a href="https://github.com/Grzeho1/SteamCollectionDownloader/releases">
     <img src="https://img.shields.io/github/downloads/Grzeho1/SteamCollectionDownloader/total?style=for-the-badge&color=blue&logo=steam" alt="Downloads">
@@ -27,7 +27,7 @@
 
 ##  How to Use
 
-## -  [ CLICK To Download Latest Release](https://github.com/Grzeho1/SteamCollectionDownloader/releases/tag/v1.0)
+## -  [ CLICK To Download Latest Release](https://github.com/Grzeho1/SteamCollectionDownloader/releases/tag/v1.1)
 
 
 - 1️ Double-click **`SteamCollectionDownloader.exe`**  
@@ -44,7 +44,8 @@
 
 
 > [!TIP]  
-> ![Preview](https://github.com/user-attachments/assets/34a254e6-e4be-451d-ba2c-96f31e9cc6d8)
+> ![Preview](https://github.com/user-attachments/assets/55b13c0e-2f49-4c6f-b1ca-1b02ad38cb5b)
+
 
 
 
