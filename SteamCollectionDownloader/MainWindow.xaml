@@ -1,7 +1,7 @@
 ﻿<Window x:Class="SteamDownloader.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Steam Collection Downloader" 
+        Title="Steam Workshop Downloader" 
         Height="600" Width="800"
         MinHeight="250" MinWidth="350"
         Background="#1E1E1E"
@@ -147,18 +147,26 @@
                    Margin="0,0,0,8"/>
 
         <!-- URL input -->
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
-            <TextBlock Text="Collection URL:"
-                       Width="70"
-                       FontSize="11"
+        <StackPanel Grid.Row="1" Margin="0,0,0,8">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Workshop URL:"
+                           Width="140"
+                           FontSize="11"
+                           FontFamily="Segoe UI"
+                           VerticalAlignment="Center"
+                           Foreground="#B0BEC5"/>
+                <TextBox x:Name="CollectionUrlTextBox"
+                         Width="400"
+                         Margin="5,0,0,0"
+                         AcceptsReturn="False"
+                         ToolTip="Paste a Steam Workshop collection URL or a single item URL (e.g. https://steamcommunity.com/sharedfiles/filedetails/?id=123456789)"/>
+            </StackPanel>
+            <TextBlock Text="Tip: You can paste either a whole collection or a single Workshop item."
+                       Margin="145,4,0,0"
+                       FontSize="10"
+                       FontStyle="Italic"
                        FontFamily="Segoe UI"
-                       VerticalAlignment="Center"
-                       Foreground="#B0BEC5"/>
-            <TextBox x:Name="CollectionUrlTextBox"
-                     Width="400"
-                     Margin="5,0,0,0"
-                     AcceptsReturn="False"
-                     ToolTip="Enter the Steam Workshop collection URL"/>
+                       Foreground="#78909C"/>
         </StackPanel>
 
         <!-- Login section -->
@@ -187,7 +195,7 @@
                                  Margin="5,0,15,0"
                                  Checked="LoginMode_Changed"/>
                     <RadioButton x:Name="AccountRadio"
-                                 Content="My Steam account"
+                                 Content="Steam account"
                                  GroupName="LoginMode"
                                  Foreground="#E0E0E0"
                                  FontSize="11"
@@ -241,7 +249,7 @@
 
                     <CheckBox Grid.Row="2" Grid.Column="1"
                               x:Name="RememberPasswordCheckBox"
-                              Content="Remember password (DPAPI encrypted)"
+                              Content="Remember password"
                               Margin="5,4,0,0"
                               Foreground="#B0BEC5"
                               FontSize="11"

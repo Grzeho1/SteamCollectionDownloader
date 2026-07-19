@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace SteamDownloader
@@ -37,6 +38,19 @@ namespace SteamDownloader
                                 string itemName = nameNode != null ? nameNode.InnerText.Trim() : "Unknown Item";
                                 ids.Add((gameId, workshopId, itemName));
                             }
+                        }
+                    }
+
+                    // No collection items found: treat the URL as a single workshop item.
+                    if (ids.Count == 0 && !string.IsNullOrEmpty(gameId))
+                    {
+                        var idMatch = Regex.Match(collectionUrl, @"[?&]id=(\d+)");
+                        if (idMatch.Success)
+                        {
+                            string workshopId = idMatch.Groups[1].Value;
+                            var titleNode = doc.DocumentNode.SelectSingleNode("//div[@class='workshopItemTitle']");
+                            string itemName = titleNode != null ? titleNode.InnerText.Trim() : "Unknown Item";
+                            ids.Add((gameId, workshopId, itemName));
                         }
                     }
                 }
