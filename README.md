@@ -13,10 +13,13 @@
 
 # SteamCollectionDownloader
 
-***With this downloader, you can download all items from a Steam Workshop collection at once — not one by one, and even if you don't own the game on Steam.***
+***With this downloader, you can download a whole Steam Workshop collection at once — or just a single item — without downloading them one by one, and even if you don't own the game on Steam.***
+
+> [!NOTE]  
+> **New:** you can now download a **single Workshop item**, not just full collections — just paste the item URL.
 
 ##  Features
--  Download entire Steam Workshop collections with a single click  
+-  Download an entire Steam Workshop collection **or a single Workshop item** with a single click  
 -  Displays item names, progress, and status in a clean console log  
 -  Automatically downloads **SteamCMD** if not found  
 -  Optional login with your own Steam account (required for workshop items of paid games you own)
@@ -28,11 +31,11 @@
 
 
 - 1️ Double-click **`SteamCollectionDownloader.exe`**  
-- 2️ Insert the collection URL (e.g. `https://steamcommunity.com/sharedfiles/filedetails/?id=123456789`)  
+- 2️ Insert a Workshop URL — either a **collection** or a **single item** (e.g. `https://steamcommunity.com/sharedfiles/filedetails/?id=123456789`). Both use the same URL format; the app detects which one it is automatically.  
 - 3️ Choose login mode:
-  - **Anonymous**-works for workshop items of free-to-play games  
-  - **My Steam account**- required for workshop items of paid games you own. Enter username + password. On the first login a dialog will ask for your **Steam Guard code** (sent to your email or from the mobile authenticator app). Subsequent runs reuse the cached session and won't ask again.  
-- 4️ Click **Start** to download all items in the collection  
+  - **Anonymous** — works for workshop items of free-to-play games  
+  - **My Steam account** — required for workshop items of paid games you own. Enter username + password. On the first login a dialog will ask for your **Steam Guard code** (sent to your email or from the mobile authenticator app). Subsequent runs reuse the cached session and won't ask again.  
+- 4️ Click **Start** to download the whole collection — or just that single item  
 
 > [!NOTE]  
 > Steam Guard code has a short validity (~10 minutes). If the code expires before you enter it, just start the download again and a fresh code will be sent.

@@ -116,9 +116,7 @@ namespace SteamDownloader
 
         private async void StartButton_Click(object sender, RoutedEventArgs e)
         {
-            StartButton.IsEnabled = false;
-            CancelButton.IsEnabled = true;
-            OpenFolderButton.IsEnabled = false;
+            SetUiBusy(true);
             cancellationTokenSource = new CancellationTokenSource();
             UpdateStatus("Initializing...");
             steamCmdPath = await FindCMDexeAsync();
@@ -128,9 +126,7 @@ namespace SteamDownloader
             {
                 Log("steamcmd.exe not found.", ConsoleColor.Red);
                 UpdateStatus("Error: steamcmd.exe not found");
-                StartButton.IsEnabled = true;
-                CancelButton.IsEnabled = false;
-                OpenFolderButton.IsEnabled = true;
+                SetUiBusy(false);
                 return;
             }
 
@@ -140,9 +136,7 @@ namespace SteamDownloader
             {
                 Log("No URL provided.", ConsoleColor.Yellow);
                 UpdateStatus("Error: No URL provided");
-                StartButton.IsEnabled = true;
-                CancelButton.IsEnabled = false;
-                OpenFolderButton.IsEnabled = true;
+                SetUiBusy(false);
                 return;
             }
 
@@ -160,9 +154,7 @@ namespace SteamDownloader
                 {
                     Log("Username and password required for account login.", ConsoleColor.Yellow);
                     UpdateStatus("Error: Missing credentials");
-                    StartButton.IsEnabled = true;
-                    CancelButton.IsEnabled = false;
-                    OpenFolderButton.IsEnabled = true;
+                    SetUiBusy(false);
                     return;
                 }
 
@@ -181,9 +173,7 @@ namespace SteamDownloader
                 {
                     Log($"Authentication failed: {authResult.ErrorMessage}", ConsoleColor.Red);
                     UpdateStatus("Authentication failed");
-                    StartButton.IsEnabled = true;
-                    CancelButton.IsEnabled = false;
-                    OpenFolderButton.IsEnabled = true;
+                    SetUiBusy(false);
                     return;
                 }
 
@@ -216,9 +206,7 @@ namespace SteamDownloader
             {
                 Log($"Failed to fetch collection: {ex.Message}", ConsoleColor.Red);
                 UpdateStatus("Error: Failed to fetch IDs");
-                StartButton.IsEnabled = true;
-                CancelButton.IsEnabled = false;
-                OpenFolderButton.IsEnabled = true;
+                SetUiBusy(false);
                 return;
             }
 
@@ -226,9 +214,7 @@ namespace SteamDownloader
             {
                 Log("No items found in collection.", ConsoleColor.Yellow);
                 UpdateStatus("Error: No items found");
-                StartButton.IsEnabled = true;
-                CancelButton.IsEnabled = false;
-                OpenFolderButton.IsEnabled = true;
+                SetUiBusy(false);
                 return;
             }
 
@@ -277,9 +263,7 @@ namespace SteamDownloader
             UpdateStatus("Download completed");
             Log($"Downloaded or skipped: {successful.Count}", ConsoleColor.Green);
             Log($"Failed: {failed.Count}", ConsoleColor.Red);
-            StartButton.IsEnabled = true;
-            CancelButton.IsEnabled = false;
-            OpenFolderButton.IsEnabled = true;
+            SetUiBusy(false);
             cancellationTokenSource.Dispose();
         }
 
@@ -570,6 +554,17 @@ namespace SteamDownloader
             {
                 StatusTextBlock.Text = message;
             });
+        }
+
+        private void SetUiBusy(bool busy)
+        {
+            StartButton.IsEnabled = !busy;
+            CancelButton.IsEnabled = busy;
+            OpenFolderButton.IsEnabled = !busy;
+            CollectionUrlTextBox.IsEnabled = !busy;
+            AnonymousRadio.IsEnabled = !busy;
+            AccountRadio.IsEnabled = !busy;
+            CredentialsPanel.IsEnabled = !busy;
         }
     }
 }
